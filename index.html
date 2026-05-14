@@ -1,1 +1,349 @@
-sddd
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Email Sementara</title>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --bg: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text-main: #1F2937;
+            --text-muted: #6B7280;
+            --border: #E5E7EB;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            padding: 2rem 1rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            max-width: 800px;
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .header {
+            text-align: center;
+        }
+
+        .header h1 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .email-box {
+            display: flex;
+            gap: 0.5rem;
+            background-color: var(--bg);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .email-box input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1.1rem;
+            text-align: center;
+            background-color: #fff;
+            color: var(--text-main);
+            outline: none;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button:disabled {
+            background-color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .inbox {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .inbox-header {
+            background-color: var(--bg);
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .inbox-header h2 {
+            font-size: 1.2rem;
+        }
+
+        .message-list {
+            list-style: none;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .message-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .message-item:hover {
+            background-color: var(--bg);
+        }
+
+        .message-item:last-child {
+            border-bottom: none;
+        }
+
+        .message-sender {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .message-subject {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .empty-inbox {
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        /* Modal for reading email */
+        #email-content {
+            display: none;
+            margin-top: 1rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background-color: #fff;
+        }
+
+        .back-btn {
+            background-color: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            margin-bottom: 1rem;
+        }
+
+        .back-btn:hover {
+            background-color: var(--bg);
+        }
+
+        .email-body {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>NGANJUK GROUP - EMAIL TEMPORARY GENERATOR</h1>
+            <p>Gunakan alamat email ini untuk mendaftar akun tanpa menerima spam di email utamamu.</p>
+        </div>
+
+        <div class="email-box">
+            <input type="text" id="email-address" value="Memuat email..." readonly>
+            <button id="copy-btn" onclick="copyEmail()">Salin</button>
+        </div>
+
+        <div class="controls">
+            <button onclick="generateNewEmail()">Ganti Email Baru</button>
+        </div>
+
+        <div class="inbox">
+            <div class="inbox-header">
+                <h2>Kotak Masuk</h2>
+                <button onclick="checkInbox()" id="refresh-btn">Refresh</button>
+            </div>
+            
+            <!-- List Email -->
+            <ul class="message-list" id="message-list">
+                <div class="empty-inbox">Belum ada pesan masuk...</div>
+            </ul>
+
+            <!-- Isi Email -->
+            <div id="email-content">
+                <button class="back-btn" onclick="closeEmail()">&larr; Kembali ke Kotak Masuk</button>
+                <h3 id="read-subject">Subject</h3>
+                <p class="message-subject">Dari: <span id="read-sender"></span></p>
+                <div class="email-body" id="read-body"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "https://www.1secmail.com/api/v1/";
+        let currentEmail = "";
+        let login = "";
+        let domain = "";
+        let checkInterval;
+
+        // Inisialisasi saat halaman dimuat
+        document.addEventListener("DOMContentLoaded", () => {
+            generateNewEmail();
+            
+            // Cek inbox otomatis setiap 15 detik
+            checkInterval = setInterval(checkInbox, 15000);
+        });
+
+        // 1. Generate Email Baru
+        async function generateNewEmail() {
+            const emailInput = document.getElementById('email-address');
+            emailInput.value = "Memuat email...";
+            
+            try {
+                const response = await fetch(`${API_BASE}?action=genRandomMailbox&count=1`);
+                const data = await response.json();
+                
+                currentEmail = data[0];
+                emailInput.value = currentEmail;
+                
+                // Pisahkan login dan domain untuk API inbox
+                [login, domain] = currentEmail.split('@');
+                
+                // Bersihkan inbox setiap kali ganti email
+                document.getElementById('message-list').innerHTML = '<div class="empty-inbox">Belum ada pesan masuk...</div>';
+                closeEmail();
+                checkInbox();
+            } catch (error) {
+                emailInput.value = "Gagal memuat email. Coba lagi.";
+                console.error("Error generating email:", error);
+            }
+        }
+
+        // 2. Cek Kotak Masuk
+        async function checkInbox() {
+            if (!login || !domain) return;
+            
+            const refreshBtn = document.getElementById('refresh-btn');
+            refreshBtn.innerText = "Memuat...";
+            refreshBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}?action=getMessages&login=${login}&domain=${domain}`);
+                const messages = await response.json();
+                
+                const listContainer = document.getElementById('message-list');
+                
+                if (messages.length === 0) {
+                    listContainer.innerHTML = '<div class="empty-inbox">Belum ada pesan masuk... (Otomatis refresh tiap 15 detik)</div>';
+                } else {
+                    listContainer.innerHTML = '';
+                    messages.forEach(msg => {
+                        const li = document.createElement('li');
+                        li.className = 'message-item';
+                        li.onclick = () => readEmail(msg.id);
+                        li.innerHTML = `
+                            <div class="message-sender">${msg.from}</div>
+                            <div class="message-subject">${msg.subject || "(Tanpa Subjek)"} - ${msg.date}</div>
+                        `;
+                        listContainer.appendChild(li);
+                    });
+                }
+            } catch (error) {
+                console.error("Error checking inbox:", error);
+            } finally {
+                refreshBtn.innerText = "Refresh";
+                refreshBtn.disabled = false;
+            }
+        }
+
+        // 3. Baca Isi Email
+        async function readEmail(messageId) {
+            document.getElementById('message-list').style.display = 'none';
+            const emailContent = document.getElementById('email-content');
+            emailContent.style.display = 'block';
+            
+            document.getElementById('read-subject').innerText = "Memuat pesan...";
+            document.getElementById('read-body').innerHTML = "";
+
+            try {
+                const response = await fetch(`${API_BASE}?action=readMessage&login=${login}&domain=${domain}&id=${messageId}`);
+                const msg = await response.json();
+                
+                document.getElementById('read-subject').innerText = msg.subject || "(Tanpa Subjek)";
+                document.getElementById('read-sender').innerText = msg.from;
+                
+                // Tampilkan HTML jika ada, jika tidak tampilkan text biasa
+                document.getElementById('read-body').innerHTML = msg.htmlBody || `<pre style="white-space: pre-wrap;">${msg.textBody}</pre>`;
+            } catch (error) {
+                document.getElementById('read-body').innerText = "Gagal memuat pesan.";
+            }
+        }
+
+        // 4. Kembali ke daftar pesan
+        function closeEmail() {
+            document.getElementById('message-list').style.display = 'block';
+            document.getElementById('email-content').style.display = 'none';
+        }
+
+        // 5. Fitur Salin Email
+        function copyEmail() {
+            const emailInput = document.getElementById('email-address');
+            emailInput.select();
+            emailInput.setSelectionRange(0, 99999); // Untuk perangkat mobile
+            navigator.clipboard.writeText(emailInput.value);
+            
+            const btn = document.getElementById('copy-btn');
+            btn.innerText = "Tersalin!";
+            setTimeout(() => btn.innerText = "Salin", 2000);
+        }
+    </script>
+</body>
+</html>
